@@ -1,5 +1,13 @@
 # GoQuickMap
 
+<center>
+
+[![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)](https://pkg.go.dev/github.com/marpit19/goquickmap)
+[![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/marpit19/goquickmap/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/marpit19/goquickmap)](https://goreportcard.com/report/github.com/marpit19/goquickmap)
+
+</center>
+
 GoQuickMap is a high-performance, flexible hash table library for Go, featuring implementations of hash tables, sets, and maps.
 
 ## Features
