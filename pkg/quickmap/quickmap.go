@@ -50,8 +50,8 @@ func (m *QuickMap) Insert(key string, value interface{}) {
 		}
 	}
 	m.size++
-	
-	if float64(m.size)/float64(len(m.buckets))>loadFactor {
+
+	if float64(m.size)/float64(len(m.buckets)) > loadFactor {
 		m.resize()
 	}
 }
@@ -60,14 +60,14 @@ func (m *QuickMap) Insert(key string, value interface{}) {
 func (m *QuickMap) Get(key string) (interface{}, bool) {
 	index := hash.Hash(key) % uint64(len(m.buckets))
 	current := m.buckets[index]
-	
+
 	for current != nil {
 		if current.key == key {
 			return current.value, true
 		}
 		current = current.next
 	}
-	
+
 	return nil, false
 }
 
@@ -77,13 +77,13 @@ func (m *QuickMap) Delete(key string) {
 	if m.buckets[index] == nil {
 		return
 	}
-	
+
 	if m.buckets[index].key == key {
 		m.buckets[index] = m.buckets[index].next
 		m.size--
 		return
 	}
-	
+
 	current := m.buckets[index]
 	for current.next != nil {
 		if current.next.key == key {
@@ -91,8 +91,24 @@ func (m *QuickMap) Delete(key string) {
 			m.size--
 			return
 		}
-		
+
 		current = current.next
+	}
+}
+
+// Size returns the number of elements in the QuickMap
+func (m *QuickMap) Size() int {
+	return m.size
+}
+
+// ForEach iterates over all key-value pairs in the QuickMap and applies the given function
+func (m *QuickMap) ForEach(f func(key string, value interface{})) {
+	for _, bucket := range m.buckets {
+		current := bucket
+		for current != nil {
+			f(current.key, current.value)
+			current = current.next
+		}
 	}
 }
 
