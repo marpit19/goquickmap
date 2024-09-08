@@ -4,7 +4,7 @@ import (
 	"github.com/marpit19/goquickmap/pkg/quickmap"
 )
 
-// QuickDict represnts a dictionary data strucutre
+// QuickDict represnts a dictionary data structure
 type QuickDict struct {
 	data *quickmap.QuickMap
 }
