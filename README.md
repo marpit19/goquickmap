@@ -28,119 +28,74 @@ go get github.com/marpit19/goquickmap
 
 ## Usage
 
+Note: All keys in the current implementation must be strings.
+
 ### QuickMap
-
 ```go
-import "github.com/marpit19/goquickmap/pkg/quickmap"
-
-// Create a new QuickMap with default capacity
 m := quickmap.New()
-
-// Create a QuickMap with a specific initial capacity
-m := quickmap.NewWithCapacity(1000)
-
-// Insert a key-value pair
-m.Insert("key", "value")
-
-// Get a value
+m.Insert("key", "value")  // key must be a string
 value, exists := m.Get("key")
-
-// Delete a key-value pair
-m.Delete("key")
-
-// Batch insert
-pairs := map[string]interface{}{
-    "key1": "value1",
-    "key2": "value2",
-}
-m.InsertMany(pairs)
-
-// Batch delete
-keys := []string{"key1", "key2"}
-m.DeleteMany(keys)
-```
-
-### QuickSet
-
-```go
-import "github.com/marpit19/goquickmap/pkg/quickset"
-
-// Create a new QuickSet with default capacity
-s := quickset.New()
-
-// Create a QuickSet with a specific initial capacity
-s := quickset.NewWithCapacity(1000)
-
-// Add an element
-s.Add("element")
-
-// Check if an element exists
-exists := s.Contains("element")
-
-// Remove an element
-s.Remove("element")
-
-// Batch add
-elements := []string{"elem1", "elem2"}
-s.AddMany(elements)
-
-// Batch remove
-s.RemoveMany(elements)
-```
-
-### QuickDict
-
-```go
-import "github.com/marpit19/goquickmap/pkg/quickdict"
-
-// Create a new QuickDict with default capacity
-d := quickdict.New()
-
-// Create a QuickDict with a specific initial capacity
-d := quickdict.NewWithCapacity(1000)
-
-// Set a key-value pair
-d.Set("key", "value")
-
-// Get a value
-value, exists := d.Get("key")
-
-// Delete a key-value pair
-d.Delete("key")
-
-// Batch set
-pairs := map[string]interface{}{
-    "key1": "value1",
-    "key2": "value2",
-}
-d.SetMany(pairs)
-
-// Batch delete
-keys := []string{"key1", "key2"}
-d.DeleteMany(keys)
-```
 
 ## Performance
 
-GoQuickMap is designed for high performance. Here are some benchmark results on an Apple M3 Pro:
+GoQuickMap offers significant performance improvements over built-in Go maps and popular third-party set implementations. Here's a comparison based on 1,000,000 operations:
 
-- QuickMap Insert: ~383 ns/op
-- QuickMap Get: ~26 ns/op
-- QuickMap Delete: ~26 ns/op
-- QuickMap InsertMany (1000 items): ~172 µs/op
-- QuickMap DeleteMany (1000 items): ~4.2 µs/op
+### Map Operations
 
-- QuickSet Add: ~316 ns/op
-- QuickSet Contains: ~25 ns/op
-- QuickSet Remove: ~26 ns/op
-- QuickSet AddMany (1000 items): ~115 µs/op
-- QuickSet RemoveMany (1000 items): ~4.2 µs/op
+| Operation    | Built-in Map | QuickMap    | Improvement |
+|--------------|--------------|-------------|-------------|
+| Insert       | 271.17ms     | 236.95ms    | 12.6% faster |
+| Get          | 153.89ms     | 83.68ms     | 45.6% faster |
+| Delete       | 188.82ms     | 70.47ms     | 62.7% faster |
 
-- QuickDict Set: ~360 ns/op
-- QuickDict Get: ~26 ns/op
-- QuickDict Delete: ~25 ns/op
-- QuickDict SetMany (1000 items): ~171 µs/op
-- QuickDict DeleteMany (1000 items): ~4.2 µs/op
+QuickMap also supports efficient batch operations:
+- Batch Insert (10,000 items): 638.54µs
+- Batch Delete (10,000 items): 106.5µs
+
+### Set Operations
+
+| Operation    | golang-set   | QuickSet    | Improvement |
+|--------------|--------------|-------------|-------------|
+| Add          | 231.33ms     | 211.49ms    | 8.6% faster |
+| Contains     | 258.16ms     | 88.20ms     | 65.8% faster |
+| Remove       | 232.36ms     | 78.90ms     | 66.0% faster |
+
+QuickSet also supports efficient batch operations:
+- Batch Add (10,000 items): 1.26ms
+- Batch Remove (10,000 items): 111.67µs
+
+### Analysis
+
+1. **Superior Performance**: GoQuickMap consistently outperforms built-in maps and popular set implementations across all operations.
+
+2. **Significant Speedup for Lookups and Deletions**: QuickMap and QuickSet show dramatic improvements in Get/Contains (45-65% faster) and Delete/Remove operations (62-66% faster).
+
+3. **Efficient Insertions**: Both QuickMap and QuickSet demonstrate faster insertion times compared to their counterparts.
+
+4. **Batch Operations**: The library offers highly efficient batch operations, allowing for rapid insertion and deletion of multiple items simultaneously.
+
+5. **Consistent Advantage**: The performance advantage is maintained across different types of operations, indicating a well-optimized underlying structure.
+
+These results demonstrate that GoQuickMap is an excellent choice for applications requiring high-performance hash tables, maps, or sets, especially those dealing with large datasets or frequent lookup and deletion operations.
+
+## Current Limitations and Future Plans
+
+### String Keys Only
+The current implementation of GoQuickMap, including QuickMap, QuickSet, and QuickDict, only supports string keys. This design choice was made to optimize performance for string-based keys, which are common in many applications.
+
+#### Implications:
+1. **Use Case Focus**: The library is currently best suited for applications that primarily use string identifiers or textual data as keys.
+2. **Performance Optimization**: The string-specific implementation allows for optimizations that may not be possible with a more generic approach.
+3. **Benchmark Context**: The performance comparisons provided are specifically for string keys and may vary for other types of keys.
+
+### Future Considerations
+We acknowledge that supporting only string keys is a limitation. Potential future enhancements may include:
+
+1. **Generic Key Support**: Implementing support for generic types as keys, allowing for greater flexibility.
+2. **Numeric Key Optimization**: Adding specialized implementations for common numeric types (int, int64, etc.) that could potentially offer even better performance for these types.
+3. **Custom Hash Functions**: Allowing users to provide custom hash functions for their specific key types.
+
+We welcome feedback and contributions from the community regarding these potential improvements. If you have specific use cases that require non-string keys, please open an issue to discuss your needs.
 
 ## Contributing
 
