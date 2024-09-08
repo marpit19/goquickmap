@@ -8,6 +8,7 @@ import (
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/marpit19/goquickmap/pkg/quickdict"
 	"github.com/marpit19/goquickmap/pkg/quickmap"
 	"github.com/marpit19/goquickmap/pkg/quickset"
 )
@@ -24,6 +25,7 @@ func main() {
 
     compareMap()
     compareSet()
+    compareDict()
 }
 
 func compareMap() {
@@ -75,7 +77,7 @@ func compareMap() {
     }
     quickmapDeleteTime := time.Since(start)
 
-    // Batch operations
+    // Batch operations for QuickMap
     batchKeys := make([]string, numBatchOperations)
     batchMap := make(map[string]interface{}, numBatchOperations)
     for i := 0; i < numBatchOperations; i++ {
@@ -109,23 +111,43 @@ func compareMap() {
 func compareSet() {
     fmt.Println("\n--- Set Comparison ---")
 
-    // golang-set
+    // Built-in set (using map)
     start := time.Now()
-    s := mapset.NewSet[string]()
+    s := make(map[string]struct{})
     for i := 0; i < numOperations; i++ {
-        s.Add(strconv.Itoa(i))
+        s[strconv.Itoa(i)] = struct{}{}
+    }
+    builtinAddTime := time.Since(start)
+
+    start = time.Now()
+    for i := 0; i < numOperations; i++ {
+        _, _ = s[strconv.Itoa(i)]
+    }
+    builtinContainsTime := time.Since(start)
+
+    start = time.Now()
+    for i := 0; i < numOperations; i++ {
+        delete(s, strconv.Itoa(i))
+    }
+    builtinRemoveTime := time.Since(start)
+
+    // golang-set
+    start = time.Now()
+    gs := mapset.NewSet[string]()
+    for i := 0; i < numOperations; i++ {
+        gs.Add(strconv.Itoa(i))
     }
     mapsetAddTime := time.Since(start)
 
     start = time.Now()
     for i := 0; i < numOperations; i++ {
-        s.Contains(strconv.Itoa(i))
+        gs.Contains(strconv.Itoa(i))
     }
     mapsetContainsTime := time.Since(start)
 
     start = time.Now()
     for i := 0; i < numOperations; i++ {
-        s.Remove(strconv.Itoa(i))
+        gs.Remove(strconv.Itoa(i))
     }
     mapsetRemoveTime := time.Since(start)
 
@@ -149,7 +171,7 @@ func compareSet() {
     }
     quicksetRemoveTime := time.Since(start)
 
-    // Batch operations
+    // Batch operations for QuickSet
     batchElements := make([]string, numBatchOperations)
     for i := 0; i < numBatchOperations; i++ {
         batchElements[i] = strconv.Itoa(rand.Intn(numOperations))
@@ -164,6 +186,11 @@ func compareSet() {
     quicksetBatchRemoveTime := time.Since(start)
 
     // Print results
+    fmt.Println("Built-in set (map[string]struct{}):")
+    fmt.Printf("  Add: %v\n", builtinAddTime)
+    fmt.Printf("  Contains: %v\n", builtinContainsTime)
+    fmt.Printf("  Remove: %v\n", builtinRemoveTime)
+
     fmt.Println("golang-set:")
     fmt.Printf("  Add: %v\n", mapsetAddTime)
     fmt.Printf("  Contains: %v\n", mapsetContainsTime)
@@ -175,6 +202,86 @@ func compareSet() {
     fmt.Printf("  Remove: %v\n", quicksetRemoveTime)
     fmt.Printf("  Batch Add (%d items): %v\n", numBatchOperations, quicksetBatchAddTime)
     fmt.Printf("  Batch Remove (%d items): %v\n", numBatchOperations, quicksetBatchRemoveTime)
+}
+
+func compareDict() {
+    fmt.Println("\n--- Dict Comparison ---")
+
+    // Built-in map
+    start := time.Now()
+    m := make(map[string]interface{})
+    for i := 0; i < numOperations; i++ {
+        key := strconv.Itoa(i)
+        m[key] = i
+    }
+    builtinSetTime := time.Since(start)
+
+    start = time.Now()
+    for i := 0; i < numOperations; i++ {
+        key := strconv.Itoa(i)
+        _ = m[key]
+    }
+    builtinGetTime := time.Since(start)
+
+    start = time.Now()
+    for i := 0; i < numOperations; i++ {
+        key := strconv.Itoa(i)
+        delete(m, key)
+    }
+    builtinDeleteTime := time.Since(start)
+
+    // QuickDict
+    start = time.Now()
+    qd := quickdict.New()
+    for i := 0; i < numOperations; i++ {
+        key := strconv.Itoa(i)
+        qd.Set(key, i)
+    }
+    quickdictSetTime := time.Since(start)
+
+    start = time.Now()
+    for i := 0; i < numOperations; i++ {
+        key := strconv.Itoa(i)
+        _, _ = qd.Get(key)
+    }
+    quickdictGetTime := time.Since(start)
+
+    start = time.Now()
+    for i := 0; i < numOperations; i++ {
+        key := strconv.Itoa(i)
+        qd.Delete(key)
+    }
+    quickdictDeleteTime := time.Since(start)
+
+    // Batch operations for QuickDict
+    batchKeys := make([]string, numBatchOperations)
+    batchMap := make(map[string]interface{}, numBatchOperations)
+    for i := 0; i < numBatchOperations; i++ {
+        key := strconv.Itoa(rand.Intn(numOperations))
+        batchKeys[i] = key
+        batchMap[key] = i
+    }
+
+    start = time.Now()
+    qd.SetMany(batchMap)
+    quickdictBatchSetTime := time.Since(start)
+
+    start = time.Now()
+    qd.DeleteMany(batchKeys)
+    quickdictBatchDeleteTime := time.Since(start)
+
+    // Print results
+    fmt.Println("Built-in map:")
+    fmt.Printf("  Set: %v\n", builtinSetTime)
+    fmt.Printf("  Get: %v\n", builtinGetTime)
+    fmt.Printf("  Delete: %v\n", builtinDeleteTime)
+
+    fmt.Println("QuickDict:")
+    fmt.Printf("  Set: %v\n", quickdictSetTime)
+    fmt.Printf("  Get: %v\n", quickdictGetTime)
+    fmt.Printf("  Delete: %v\n", quickdictDeleteTime)
+    fmt.Printf("  Batch Set (%d items): %v\n", numBatchOperations, quickdictBatchSetTime)
+    fmt.Printf("  Batch Delete (%d items): %v\n", numBatchOperations, quickdictBatchDeleteTime)
 }
 
 func printMemUsage() {
