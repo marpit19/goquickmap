@@ -16,6 +16,13 @@ func New() *QuickDict {
 	}
 }
 
+// NewWithCapacity creates and returns a new QuickDict with the specified initial capacity
+func NewWithCapacity(initialCapacity int) *QuickDict {
+	return &QuickDict{
+		data: quickmap.NewWithCapacity(initialCapacity),
+	}
+}
+
 // Set inserts or updates a key-value pair in the dictionary
 func (d *QuickDict) Set(key string, value interface{}) {
 	d.data.Insert(key, value)
@@ -52,4 +59,14 @@ func (d *QuickDict) Values() []interface{} {
 		values = append(values, value)
 	})
 	return values
+}
+
+// SetMany inserts or updates multiple key-value pairs in the dictionary
+func (d *QuickDict) SetMany(pairs map[string]interface{}) {
+	d.data.InsertMany(pairs)
+}
+
+// DeleteMany removes multiple key-value pairs from the dictionary
+func (d *QuickDict) DeleteMany(keys []string) {
+	d.data.DeleteMany(keys)
 }

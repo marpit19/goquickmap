@@ -15,6 +15,13 @@ func New() *QuickSet {
 	}
 }
 
+// NewWithCapacity creates and returns a new QuickSet with the specified initial capacity
+func NewWithCapacity(initialCapacity int) *QuickSet {
+	return &QuickSet{
+		data: quickmap.NewWithCapacity(initialCapacity),
+	}
+}
+
 // Add inserts an element into the set
 func (s *QuickSet) Add(element string) {
 	s.data.Insert(element, struct{}{})
@@ -43,4 +50,18 @@ func (s *QuickSet) Elements() []string {
 		elements = append(elements, key)
 	})
 	return elements
+}
+
+// AddMany adds multiple elements to the set
+func (s *QuickSet) AddMany(elements []string) {
+	pairs := make(map[string]interface{}, len(elements))
+	for _, elem := range elements {
+		pairs[elem] = struct{}{}
+	}
+	s.data.InsertMany(pairs)
+}
+
+// RemoveMany removes multiple elements from the set
+func (s *QuickSet) RemoveMany(elements []string) {
+	s.data.DeleteMany(elements)
 }

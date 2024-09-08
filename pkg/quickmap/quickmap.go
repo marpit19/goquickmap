@@ -3,8 +3,8 @@ package quickmap
 import "github.com/marpit19/goquickmap/internal/hash"
 
 const (
-	initalSize = 16
-	loadFactor = 0.75
+	defaultInitialSize = 16
+	loadFactor         = 0.75
 )
 
 type node struct {
@@ -21,8 +21,16 @@ type QuickMap struct {
 
 // creates and returns  a new QuickMap
 func New() *QuickMap {
+	return NewWithCapacity(defaultInitialSize)
+}
+
+// NewWithCapacity creates and returns a new QuickMap with the specified initial capacity
+func NewWithCapacity(initialCapacity int) *QuickMap {
+	if initialCapacity < 1 {
+		initialCapacity = defaultInitialSize
+	}
 	return &QuickMap{
-		buckets: make([]*node, initalSize),
+		buckets: make([]*node, initialCapacity),
 		size:    0,
 	}
 }
@@ -52,7 +60,7 @@ func (m *QuickMap) Insert(key string, value interface{}) {
 	m.size++
 
 	if float64(m.size)/float64(len(m.buckets)) > loadFactor {
-		m.resize()
+		m.resize(m.size * 2)
 	}
 }
 
@@ -112,12 +120,36 @@ func (m *QuickMap) ForEach(f func(key string, value interface{})) {
 	}
 }
 
+// InsertMany adds multiple key-value pairs to the map
+func (m *QuickMap) InsertMany(pairs map[string]interface{}) {
+	// Pre-allocate space if needed
+	if m.size+len(pairs) > int(float64(len(m.buckets))*loadFactor) {
+		m.resize(m.size + len(pairs))
+	}
+
+	for k, v := range pairs {
+		m.Insert(k, v)
+	}
+}
+
+// DeleteMany removes multiple keys from the map
+func (m *QuickMap) DeleteMany(keys []string) {
+	for _, k := range keys {
+		m.Delete(k)
+	}
+}
+
 // resize increases the size of the hash table and reshases all the elements
-func (m *QuickMap) resize() {
-	newBuckets := make([]*node, len(m.buckets)*2)
+func (m *QuickMap) resize(targetSize int) {
+	newCapacity := len(m.buckets) * 2
+	for newCapacity < targetSize {
+		newCapacity *= 2
+	}
+
+	newBuckets := make([]*node, newCapacity)
 	for _, bucket := range m.buckets {
 		for bucket != nil {
-			index := hash.Hash(bucket.key) % uint64(len(newBuckets))
+			index := hash.Hash(bucket.key) % uint64(newCapacity)
 			next := bucket.next
 			bucket.next = newBuckets[index]
 			newBuckets[index] = bucket
