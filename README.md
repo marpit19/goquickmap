@@ -31,10 +31,11 @@ go get github.com/marpit19/goquickmap
 Note: All keys in the current implementation must be strings.
 
 ### QuickMap
-```go
+```
 m := quickmap.New()
 m.Insert("key", "value")  // key must be a string
 value, exists := m.Get("key")
+```
 
 ## Performance
 
